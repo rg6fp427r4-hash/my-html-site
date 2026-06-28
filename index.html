@@ -1,0 +1,1099 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>سامانه آزمون‌ساز علوم اجتماعی هشتم</title>
+  <style>
+    :root{
+      --bg:#0b1220; --panel:#121a2b; --text:#e9eefc; --muted:#a9b4d0;
+      --brand:#5aa7ff; --ok:#2dd4bf; --warn:#fbbf24; --bad:#fb7185;
+      --border:rgba(255,255,255,.08); --shadow: 0 10px 30px rgba(0,0,0,.35); --radius:14px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background: radial-gradient(1200px 900px at 80% -10%, rgba(90,167,255,.25), transparent 55%),
+                  radial-gradient(900px 700px at -10% 20%, rgba(45,212,191,.18), transparent 55%), var(--bg);
+      color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+    .app{display:grid; grid-template-columns: 300px 1fr; min-height:100vh;}
+    .sidebar{ background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      border-left:1px solid var(--border); padding:18px; position:sticky; top:0; height:100vh; }
+    .brand{ display:flex; flex-direction:column; gap:6px; padding:10px 12px; border:1px solid var(--border);
+      border-radius: var(--radius); background: rgba(0,0,0,.18); box-shadow: var(--shadow); margin-bottom:14px; }
+    .brand .t{font-weight:800; color:var(--brand)}
+    .nav{display:flex; flex-direction:column; gap:8px}
+    .nav button{ border:1px solid var(--border); background: rgba(0,0,0,.16); color:var(--text);
+      padding:12px; border-radius: 12px; cursor:pointer; text-align:right; transition:.15s; font-size:14px; }
+    .nav button:hover{background: rgba(90,167,255,.1)}
+    .nav button.active{outline:2px solid var(--brand); background: rgba(90,167,255,.15)}
+    .main{padding:20px; max-width:1100px; width:100%; margin:0 auto;}
+    .panel{ border:1px solid var(--border); border-radius: var(--radius); background: rgba(0,0,0,.18); padding:20px; }
+    .row{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+    .col{display:flex; flex-direction:column; gap:8px}
+    input, select, textarea{ width:100%; padding:10px 12px; border-radius: 10px; border:1px solid var(--border);
+      background: rgba(10,16,30,.55); color: var(--text); outline:none; font-family:inherit; }
+    textarea{min-height:110px; line-height:1.8}
+    .btn{ border:1px solid var(--border); background: rgba(90,167,255,.15); color:var(--text);
+      padding:10px 16px; border-radius: 10px; cursor:pointer; font-weight:700; transition:.15s; }
+    .btn:hover{transform: translateY(-2px); border-color: var(--brand)}
+    .btn.ok{background: rgba(45,212,191,.15); border-color: rgba(45,212,191,.3)}
+    .btn.danger{background: rgba(251,113,133,.15); border-color: rgba(251,113,133,.3)}
+    .btn.ghost{background: rgba(255,255,255,.04)}
+    .card{ border:1px solid var(--border); background: rgba(255,255,255,.03); border-radius: 12px; padding:15px; margin-bottom:10px; }
+    .qBadge{ padding:4px 8px; border-radius:8px; background: rgba(90,167,255,.15); color: #dcebff; font-size:11px; display:inline-block}
+    .choice-item{ display:flex; align-items:center; gap:8px; margin:5px 0; cursor:pointer; }
+    .mono{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+    .hr{height:1px; background: var(--border); margin:15px 0}
+    .muted{color:var(--muted)}
+    .small{font-size:12px}
+    .grid2{display:grid; grid-template-columns: 1fr 1fr; gap:20px}
+    .pill{display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border:1px solid var(--border); border-radius:999px; background: rgba(0,0,0,.18)}
+    .kws{display:flex; gap:6px; flex-wrap:wrap}
+    .kw{font-size:11px; padding:3px 8px; border-radius:999px; border:1px solid var(--border); background: rgba(255,255,255,.03)}
+    .chapter-box{border:1px dashed var(--border); padding:12px; border-radius:12px; margin-bottom:10px; background:rgba(255,255,255,.02)}
+    @media (max-width: 900px){ .app{grid-template-columns: 1fr} .sidebar{height:auto; position:relative} .grid2{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="t">آزمون‌ساز اجتماعی هشتم</div>
+      <div class="muted" style="font-size:11px">نسخه ۲.۲ - درس‌بندی و بانک دو بخشی</div>
+    </div>
+    <nav class="nav" id="nav">
+      <button data-view="settings" class="active">⚙️ تنظیمات و درس‌بندی</button>
+      <button data-view="bank">📚 بانک سؤالات</button>
+      <button data-view="qa">🔍 پاسخ سریع به سؤال</button>
+      <button data-view="build">🛠 ساخت آزمون</button>
+      <button data-view="exam">📝 شروع امتحان</button>
+      <button data-view="report">📊 کارنامه</button>
+    </nav>
+    <div class="hr"></div>
+    <div class="col small muted">
+      <div>پک‌ها: <span id="countPacks">0</span></div>
+      <div>کل سوالات: <span id="countTotalQ">0</span></div>
+      <div>تعداد درس‌ها: <span id="countLessons">24</span></div>
+      <div class="pill" title="پایگاه داده محلی مرورگر">
+        <span class="mono">localStorage</span> <span class="muted">فعال</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- VIEW: SETTINGS -->
+    <section id="view-settings" class="panel">
+      <h2>تنظیمات کلی و درس‌بندی فصل‌ها</h2>
+
+      <div class="card">
+        <div class="grid2">
+          <div class="col">
+            <label>تعداد کل درس‌ها</label>
+            <input type="number" id="totalLessonsInput" min="1" value="24">
+            <button class="btn ok" id="btnSaveLessonsCount">ذخیره تعداد درس‌ها</button>
+          </div>
+          <div class="col">
+            <label>تعداد فصل‌ها برای تعریف</label>
+            <input type="number" id="chapterCountInput" min="1" value="8">
+            <button class="btn ghost" id="btnGenerateChapters">ساخت فرم فصل‌ها</button>
+          </div>
+        </div>
+        <div class="muted small" style="margin-top:10px">
+          اینجا مشخص می‌کنی چند درس داری و هر فصل شامل کدام درس‌هاست. سیستم دیگر از خودش عدد حدس نمی‌زند، چون هنوز آن‌قدر عارف نشده 😌
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top:0">درس‌های مربوط به هر فصل</h3>
+        <div id="chapterInputs"></div>
+        <button class="btn ok" id="btnSaveChapters">ذخیره درس‌بندی فصل‌ها</button>
+      </div>
+    </section>
+
+    <!-- VIEW: BANK -->
+    <section id="view-bank" class="panel" style="display:none">
+      <h2 class="h">ورود هوشمند سوالات</h2>
+
+      <div class="card">
+        <div class="muted small">
+          الگوی پیشنهادی:<br>
+          <span class="mono">1 سوال: ...</span><br>
+          <span class="mono">پاسخ: ...</span><br>
+          <span class="mono">2 سوال: ...</span><br>
+          نکته: سؤال جدید فقط با دیدن <b>سوال:</b> شروع می‌شود.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="grid2">
+          <div class="col">
+            <label>این سوال‌ها مربوط به کدام درس هستند؟</label>
+            <select id="bankLessonSelect"></select>
+          </div>
+          <div class="col">
+            <label>این سوال‌ها در کدام بخش بانک ذخیره شوند؟</label>
+            <select id="bankCategorySelect">
+              <option value="short">سوالات کوتاه</option>
+              <option value="long">سوالات بلند و تشریحی</option>
+            </select>
+          </div>
+        </div>
+        <div class="muted small" style="margin-top:10px">
+          نام پک به‌صورت خودکار ساخته می‌شود؛ مثل «درس ۵ - سوالات کوتاه».
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="col">
+          <label>۱) چسباندن متن آزاد</label>
+          <textarea id="rawInput" placeholder="مثلاً:
+1 سوال: در زمان عباسیان چگونه شرایط برای تشکیل سلسله های ایرانی بوجود آمد؟
+پاسخ: خلافت عباسیان پس از یک قرن فرمانروایی ضعیف شد...
+2 سوال: ..."></textarea>
+          <div class="row">
+            <button class="btn ok" id="btnAnalyze">تحلیل و استخراج دقیق</button>
+            <button class="btn ghost" id="btnPasteSample">چسباندن نمونه</button>
+          </div>
+        </div>
+        <div class="col">
+          <label>۲) تایید و ویرایش نهایی</label>
+          <div id="analyzeResult" class="card muted" style="min-height:140px; font-size:13px">
+            متن را وارد کن و «تحلیل» را بزن.
+          </div>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="row" style="justify-content:space-between">
+        <h3>پک‌های ذخیره شده</h3>
+        <div class="row">
+          <button class="btn ghost" id="btnExport">خروجی JSON</button>
+          <button class="btn ghost" id="btnImport">ورود JSON</button>
+          <button class="btn danger" id="btnClearAll">پاکسازی کل دیتابیس</button>
+        </div>
+      </div>
+
+      <div id="packsList"></div>
+    </section>
+
+    <!-- VIEW: QA -->
+    <section id="view-qa" class="panel" style="display:none">
+      <div class="row" style="justify-content:space-between; align-items:flex-start">
+        <div>
+          <h2 style="margin:0 0 8px 0">جستجوی سریع و پاسخ تشریحی</h2>
+          <div class="muted small">با جستجوی دقیق‌تر و نمایش کلمات کلیدی مشترک</div>
+        </div>
+        <div class="pill">
+          <span>آستانه دقت</span>
+          <select id="qaThreshold" style="width:auto; padding:6px 10px">
+            <option value="0.35">بالا</option>
+            <option value="0.28" selected>متعادل</option>
+            <option value="0.20">پایین</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="hr"></div>
+
+      <div class="grid2" style="grid-template-columns:1fr 220px 220px">
+        <div class="col">
+          <label>سؤال خود را اینجا بنویسید:</label>
+          <input type="text" id="qaSearchInput" placeholder="مثلاً: در زمان عباسیان چرا سلسله‌های ایرانی تشکیل شدند؟">
+        </div>
+        <div class="col">
+          <label>فیلتر درس</label>
+          <select id="qaLessonFilter"></select>
+        </div>
+        <div class="col">
+          <label>فیلتر نوع بانک</label>
+          <select id="qaCategoryFilter">
+            <option value="all">همه</option>
+            <option value="short">سوالات کوتاه</option>
+            <option value="long">سوالات بلند و تشریحی</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <button class="btn ok" id="btnQASearch">جستجو</button>
+        <button class="btn ghost" id="btnQAReset">پاک کردن</button>
+      </div>
+
+      <div id="qaResultsBox" style="margin-top:16px"></div>
+    </section>
+
+    <!-- VIEW: BUILD -->
+    <section id="view-build" class="panel" style="display:none">
+      <h2>تنظیمات آزمون</h2>
+
+      <div class="grid2" style="grid-template-columns:1fr 1fr; gap:15px">
+        <div class="col">
+          <label>نام دانش‌آموز</label>
+          <input id="stdName" value="کاربر مهمان">
+        </div>
+
+        <div class="col">
+          <label>نوع آزمون</label>
+          <select id="examMode">
+            <option value="all">آزمون از همه درس‌ها</option>
+            <option value="range">آزمون از بازه درس‌ها</option>
+            <option value="chapters">آزمون فصل‌های انتخابی</option>
+          </select>
+        </div>
+
+        <div class="col" id="rangeBox">
+          <label>بازه درس‌ها</label>
+          <div class="row">
+            <input type="number" id="rangeStart" min="1" value="1" placeholder="از">
+            <input type="number" id="rangeEnd" min="1" value="12" placeholder="تا">
+          </div>
+        </div>
+
+        <div class="col" id="chaptersBox" style="display:none">
+          <label>فصل‌های انتخابی</label>
+          <input id="selectedChaptersInput" placeholder="مثلاً: 1,3,5">
+          <div class="muted small">ابتدا درس‌های مربوط به فصل‌ها را در بخش «تنظیمات و درس‌بندی» ذخیره کنید.</div>
+        </div>
+
+        <div class="col">
+          <label>نوع سوال برای آزمون</label>
+          <select id="examCategoryFilter">
+            <option value="all">همه نوع سوال</option>
+            <option value="short">فقط سوالات کوتاه</option>
+            <option value="long">فقط سوالات بلند و تشریحی</option>
+          </select>
+        </div>
+
+        <div class="col">
+          <label>تعداد سوال</label>
+          <input type="number" id="qCount" value="10">
+        </div>
+
+        <div class="col">
+          <label>زمان (دقیقه)</label>
+          <input type="number" id="qTime" value="15">
+        </div>
+      </div>
+
+      <button class="btn ok" style="margin-top:20px" id="btnStartBuild">ساخت و شروع آزمون</button>
+      <div class="muted small" style="margin-top:10px">
+        اگر «آزمون فصل‌های انتخابی» را انتخاب کردی، حتماً اول درس‌بندی فصل‌ها را در تنظیمات ثبت کن.
+      </div>
+    </section>
+
+    <!-- VIEW: EXAM -->
+    <section id="view-exam" class="panel" style="display:none">
+      <div class="row" style="justify-content:space-between">
+        <h2 id="examTitleHead">در حال برگزاری...</h2>
+        <div class="pill" style="border-color: rgba(90,167,255,.4)">زمان: <span id="timer" class="mono">00:00</span></div>
+      </div>
+      <div id="examContainer" style="margin-top:20px"></div>
+      <button class="btn ok" id="btnSubmitExam">پایان و تصحیح خودکار</button>
+    </section>
+
+    <!-- VIEW: REPORT -->
+    <section id="view-report" class="panel" style="display:none">
+      <h2>کارنامه عملکرد</h2>
+      <div id="reportSummary"></div>
+      <div id="reportDetails"></div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ---------------- CORE STATE ---------------- */
+const LS_KEY = "social_8th_db_v22";
+let state = JSON.parse(localStorage.getItem(LS_KEY)) || {
+  settings: {
+    totalLessons: 24,
+    chapterMap: {}
+  },
+  packs: [],
+  history: []
+};
+
+function migrateState() {
+  if (!state.settings) {
+    state.settings = { totalLessons: 24, chapterMap: {} };
+  }
+  if (!state.settings.totalLessons || state.settings.totalLessons < 1) {
+    state.settings.totalLessons = 24;
+  }
+  if (!state.settings.chapterMap) {
+    state.settings.chapterMap = {};
+  }
+  if (!Array.isArray(state.packs)) state.packs = [];
+  if (!Array.isArray(state.history)) state.history = [];
+}
+migrateState();
+
+function save() {
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+  updateStats();
+}
+
+function updateStats() {
+  byId('countPacks').textContent = state.packs.length;
+  let total = 0; state.packs.forEach(p => total += p.items.length);
+  byId('countTotalQ').textContent = total;
+  byId('countLessons').textContent = state.settings.totalLessons || 24;
+}
+
+/* ---------------- HELPERS ---------------- */
+const byId = id => document.getElementById(id);
+
+function faNormalize(s) {
+  if (!s) return "";
+  return String(s)
+    .replace(/[\u064B-\u065F\u0670\u06D6-\u06ED]/g, "")
+    .replace(/\u200c/g, " ")
+    .replace(/[ي]/g, "ی")
+    .replace(/[ك]/g, "ک")
+    .replace(/[ۀ]/g, "ه")
+    .replace(/[ؤ]/g, "و")
+    .replace(/[إأآ]/g, "ا")
+    .replace(/[^\w\sآ-ی]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
+const STOPWORDS = new Set([
+  "از","به","در","را","با","برای","که","و","یا","اما","پس","تا","این","آن","یک","دو","سه","چهار",
+  "چیست","کدام","چه","چرا","چگونه","کجا","کی","مگر","نیز","هم","همه","هر","شود","شود؟","بود","است","هست","می","شود"
+]);
+
+function tokenizeFa(s) {
+  const norm = faNormalize(s);
+  if(!norm) return [];
+  return norm.split(" ").filter(t => t.length >= 2 && !STOPWORDS.has(t));
+}
+
+function bigramSet(s) {
+  s = faNormalize(s);
+  const set = new Set();
+  for (let i=0; i<s.length-1; i++) set.add(s.slice(i,i+2));
+  return set;
+}
+
+function diceSim(a, b) {
+  const A = bigramSet(a), B = bigramSet(b);
+  if (A.size === 0 || B.size === 0) return 0;
+  let inter = 0;
+  for (const x of A) if (B.has(x)) inter++;
+  return (2 * inter) / (A.size + B.size);
+}
+
+function jaccardTokens(a, b) {
+  const ta = new Set(tokenizeFa(a));
+  const tb = new Set(tokenizeFa(b));
+  if (ta.size === 0 || tb.size === 0) return 0;
+  let inter = 0;
+  for (const x of ta) if (tb.has(x)) inter++;
+  const union = ta.size + tb.size - inter;
+  return union ? (inter/union) : 0;
+}
+
+function keywordCoverage(query, text) {
+  const q = tokenizeFa(query);
+  if(!q.length) return 0;
+  const t = new Set(tokenizeFa(text));
+  let hit = 0;
+  for (const w of q) if (t.has(w)) hit++;
+  return hit / q.length;
+}
+
+function combinedScore(query, candidate) {
+  const jac = jaccardTokens(query, candidate);
+  const dice = diceSim(query, candidate);
+  const cov = keywordCoverage(query, candidate);
+  const cap = (cov < 0.25) ? 0.75 : 1.0;
+  const score = cap * (0.55*jac + 0.30*dice + 0.15*cov);
+  return { score, parts: { jac, dice, cov } };
+}
+
+function escapeHtml(s){
+  return String(s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
+function shuffle(arr){
+  return [...arr].sort(() => 0.5 - Math.random());
+}
+
+function parseNumberList(text) {
+  return String(text || "")
+    .split(",")
+    .map(x => parseInt(x.trim(), 10))
+    .filter(x => !isNaN(x) && x > 0);
+}
+
+function getCategoryLabel(category) {
+  return category === "long" ? "سوالات بلند و تشریحی" : "سوالات کوتاه";
+}
+
+function getPackTitle(lesson, category) {
+  return `درس ${lesson} - ${getCategoryLabel(category)}`;
+}
+
+/* ---------------- LESSON / CHAPTER UI ---------------- */
+function populateLessonSelects() {
+  const total = state.settings.totalLessons || 24;
+
+  const lessonOptions = [`<option value="">انتخاب کنید</option>`]
+    .concat(Array.from({length: total}, (_,i) => `<option value="${i+1}">درس ${i+1}</option>`))
+    .join("");
+
+  byId('bankLessonSelect').innerHTML = lessonOptions;
+
+  const qaOptions = [`<option value="all">همه درس‌ها</option>`]
+    .concat(Array.from({length: total}, (_,i) => `<option value="${i+1}">درس ${i+1}</option>`))
+    .join("");
+
+  byId('qaLessonFilter').innerHTML = qaOptions;
+
+  const start = byId('rangeStart');
+  const end = byId('rangeEnd');
+  if(start) {
+    start.max = total;
+    if(parseInt(start.value || "1", 10) > total) start.value = 1;
+  }
+  if(end) {
+    end.max = total;
+    if(parseInt(end.value || "12", 10) > total) end.value = total;
+  }
+
+  byId('totalLessonsInput').value = total;
+}
+
+function renderChapterInputs(count) {
+  const map = state.settings.chapterMap || {};
+  let html = "";
+  for(let i=1; i<=count; i++) {
+    const current = Array.isArray(map[i]) ? map[i].join(",") : "";
+    html += `
+      <div class="chapter-box">
+        <label>فصل ${i} - شماره درس‌ها</label>
+        <input class="chapter-input" data-chapter="${i}" value="${escapeHtml(current)}" placeholder="مثلاً: 1,2,3">
+        <div class="muted small">شماره درس‌ها را با ویرگول جدا کن.</div>
+      </div>
+    `;
+  }
+  byId('chapterInputs').innerHTML = html;
+}
+
+byId('btnSaveLessonsCount').onclick = () => {
+  const n = parseInt(byId('totalLessonsInput').value || "24", 10);
+  if(isNaN(n) || n < 1) return alert("تعداد درس‌ها نامعتبر است.");
+  state.settings.totalLessons = n;
+  save();
+  populateLessonSelects();
+  alert("تعداد درس‌ها ذخیره شد.");
+};
+
+byId('btnGenerateChapters').onclick = () => {
+  const n = parseInt(byId('chapterCountInput').value || "8", 10);
+  if(isNaN(n) || n < 1) return alert("تعداد فصل‌ها نامعتبر است.");
+  renderChapterInputs(n);
+};
+
+byId('btnSaveChapters').onclick = () => {
+  const inputs = document.querySelectorAll('.chapter-input');
+  const total = state.settings.totalLessons || 24;
+  const chapterMap = {};
+
+  inputs.forEach(inp => {
+    const chapterNo = inp.dataset.chapter;
+    const vals = parseNumberList(inp.value).filter(x => x >= 1 && x <= total);
+    chapterMap[chapterNo] = [...new Set(vals)];
+  });
+
+  state.settings.chapterMap = chapterMap;
+  save();
+  alert("درس‌بندی فصل‌ها ذخیره شد.");
+};
+
+/* ---------------- MULTI-LINE PARSER ---------------- */
+function parseQAFromRaw(raw) {
+  const text = String(raw || "").replace(/\r/g, "");
+  const lines = text.split("\n");
+
+  const isQStart = (line) => /(^\s*\d+\s*)?(سوال|سؤال)\s*:\s*/i.test(line);
+  const isAStart = (line) => /^\s*(پاسخ|جواب)\s*:\s*/i.test(line);
+
+  const stripQ = (line) => line.replace(/(^\s*\d+\s*)?(سوال|سؤال)\s*:\s*/i, "").trim();
+  const stripA = (line) => line.replace(/^\s*(پاسخ|جواب)\s*:\s*/i, "").trim();
+
+  const items = [];
+  let cur = null;
+
+  function pushCur(){
+    if(!cur) return;
+    const q = cur.qLines.join("\n").trim();
+    const a = cur.aLines.join("\n").trim();
+    if(q.length < 3) return;
+    items.push({ q, a });
+  }
+
+  for (let i=0; i<lines.length; i++){
+    const line = lines[i].trim();
+    if(!line) continue;
+
+    if(isQStart(line)) {
+      pushCur();
+      cur = { qLines: [stripQ(line)], aLines: [] };
+      continue;
+    }
+
+    if(!cur) continue;
+
+    if(isAStart(line)) {
+      cur.aLines.push(stripA(line));
+      continue;
+    }
+
+    if(cur.aLines.length === 0) cur.qLines.push(line);
+    else cur.aLines.push(line);
+  }
+
+  pushCur();
+  return items;
+}
+
+/* ---------------- ANALYZER ---------------- */
+byId('btnPasteSample').onclick = () => {
+  byId('rawInput').value =
+`1 سوال: در زمان عباسیان چگونه شرایط برای تشکیل سلسله های ایرانی بوجود آمد؟
+پاسخ: خلافت عباسیان پس از یک قرن فرمانروایی، ضعیف شد و خلفا در اداره قلمرو پهناور خود ناتوان بودند. از این رو، شرایط مناسبی برای تشکیل سلسله های ایرانی به وجود آمد.
+
+2 سوال: منظور از حقوق شهروندی چیست؟
+پاسخ: مجموعه حقوق و مسئولیت‌هایی که هر فرد در جامعه دارد و قانون از آن حمایت می‌کند.`;
+};
+
+byId('btnAnalyze').onclick = () => {
+  const txt = byId('rawInput').value;
+  const lesson = parseInt(byId('bankLessonSelect').value || "", 10);
+  const category = byId('bankCategorySelect').value;
+
+  if(!lesson) return alert("اول شماره درس را انتخاب کن.");
+  if(!txt) return alert("متنی وارد نشده!");
+
+  const parsed = parseQAFromRaw(txt);
+
+  if(parsed.length === 0){
+    byId('analyzeResult').innerHTML = `<div class="muted">چیزی استخراج نشد. مطمئن شو با «سوال:» و «پاسخ:» نوشته‌ای.</div>`;
+    return;
+  }
+
+  let html = `
+    <div class="card" style="background: rgba(45,212,191,.08)">
+      <b>مسیر ذخیره:</b> ${escapeHtml(getPackTitle(lesson, category))}
+    </div>
+    <h4 style="margin:0 0 10px 0">سوالات شناسایی شده: ${parsed.length}</h4>
+  `;
+
+  parsed.forEach((it, idx) => {
+    const q = escapeHtml(it.q);
+    const a = escapeHtml(it.a || "");
+    html += `
+      <div class="card" id="temp-${idx}">
+        <div class="row" style="justify-content:space-between; align-items:flex-start">
+          <div class="qBadge">#${idx+1}</div>
+          <div class="muted small">اگر MCQ خواستی، گزینه‌ها را زیرش بنویس: هر گزینه در یک خط (۴ خط)</div>
+        </div>
+
+        <label class="small muted">متن سؤال</label>
+        <textarea class="q-val" style="min-height:70px">${q}</textarea>
+
+        <div class="row">
+          <div class="col" style="flex:1">
+            <label class="small muted">پاسخ(ها) — با کاما جدا کن</label>
+            <input value="${a}" class="a-val" placeholder="مثلاً: ضعف خلافت عباسیان, کاهش قدرت مرکزی">
+          </div>
+          <div class="col" style="width:220px">
+            <label class="small muted">نوع سؤال</label>
+            <select class="t-val">
+              <option value="blank">جای‌خالی / تشریحی کوتاه</option>
+              <option value="mcq">چهارگزینه‌ای</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col" style="flex:1">
+            <label class="small muted">گزینه‌ها (فقط برای چهارگزینه‌ای)</label>
+            <textarea class="c-val" placeholder="گزینه 1
+گزینه 2
+گزینه 3
+گزینه 4" style="min-height:90px"></textarea>
+          </div>
+          <div class="col" style="flex:1">
+            <label class="small muted">توضیح تشریحی کامل</label>
+            <textarea class="e-val" placeholder="توضیح کامل و نکات..." style="min-height:90px"></textarea>
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `<button class="btn ok" onclick="saveAnalyzed()">ذخیره قطعی در بانک</button>`;
+  byId('analyzeResult').innerHTML = html;
+};
+
+window.saveAnalyzed = () => {
+  const lesson = parseInt(byId('bankLessonSelect').value || "", 10);
+  const category = byId('bankCategorySelect').value;
+
+  if(!lesson) return alert("شماره درس مشخص نیست.");
+
+  const cards = document.querySelectorAll('#analyzeResult .card[id^="temp-"]');
+  const items = [];
+
+  cards.forEach(c => {
+    const q = c.querySelector('.q-val')?.value?.trim() || "";
+    const type = c.querySelector('.t-val')?.value || "blank";
+    const answersRaw = c.querySelector('.a-val')?.value || "";
+    const answers = answersRaw.split(',').map(x => x.trim()).filter(Boolean);
+    const explanation = c.querySelector('.e-val')?.value?.trim() || "";
+
+    let choices = (c.querySelector('.c-val')?.value || "")
+      .split("\n").map(x => x.trim()).filter(Boolean);
+
+    let finalType = type;
+    if(finalType === "mcq" && choices.length < 4){
+      finalType = "blank";
+      choices = [];
+    }
+
+    if(q.length >= 3){
+      items.push({
+        id: Date.now() + Math.random(),
+        lesson,
+        category,
+        question: q,
+        answers: answers.length ? answers : [],
+        type: finalType,
+        explanation,
+        choices
+      });
+    }
+  });
+
+  if(items.length === 0) return alert("چیزی برای ذخیره وجود ندارد.");
+
+  const title = getPackTitle(lesson, category);
+
+  state.packs.push({
+    id: Date.now(),
+    lesson,
+    category,
+    title,
+    items
+  });
+
+  save();
+  renderPacks();
+  alert(`ذخیره شد در: ${title}`);
+};
+
+/* ---------------- BANK RENDERING ---------------- */
+function renderPacks() {
+  const container = byId('packsList');
+  if(state.packs.length === 0){
+    container.innerHTML = `<div class="muted">هنوز پکی ذخیره نشده.</div>`;
+    return;
+  }
+
+  container.innerHTML = state.packs.map(p => `
+    <div class="card">
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <b>${escapeHtml(p.title)} (${p.items.length} سوال)</b><br>
+          <span class="muted small">دسته: ${escapeHtml(getCategoryLabel(p.category || "short"))}</span><br>
+          <span class="muted small">نمونه: ${escapeHtml((p.items[0]?.question || "").slice(0, 60))}${(p.items[0]?.question||"").length>60?"...":""}</span>
+        </div>
+        <div class="row">
+          <button class="btn ghost" style="padding:6px 10px" onclick="openPack(${p.id})">مشاهده</button>
+          <button class="btn danger" style="padding:6px 10px" onclick="deletePack(${p.id})">حذف</button>
+        </div>
+      </div>
+      <div id="pack-${p.id}" style="display:none; margin-top:10px"></div>
+    </div>
+  `).join('');
+}
+
+window.openPack = (id) => {
+  const p = state.packs.find(x => x.id === id);
+  const box = byId(`pack-${id}`);
+  if(!p || !box) return;
+  const shown = box.style.display !== "none";
+  if(shown){ box.style.display = "none"; box.innerHTML = ""; return; }
+
+  box.style.display = "block";
+  box.innerHTML = p.items.slice(0, 8).map((it, i) => `
+    <div class="card" style="margin:10px 0; background: rgba(0,0,0,.15)">
+      <div class="row" style="justify-content:space-between">
+        <b>${i+1}. ${escapeHtml(it.question)}</b>
+        <span class="qBadge">${it.type}</span>
+      </div>
+      <div class="muted small">درس ${it.lesson || p.lesson || "-"}</div>
+      <div class="muted small">پاسخ‌ها: ${escapeHtml((it.answers||[]).join(" / ")) || "—"}</div>
+      ${it.explanation ? `<div class="muted small" style="margin-top:6px">توضیح: ${escapeHtml(it.explanation).slice(0,160)}${it.explanation.length>160?"...":""}</div>` : ""}
+    </div>
+  `).join('') + (p.items.length>8 ? `<div class="muted small">... و ${p.items.length-8} سوال دیگر</div>` : "");
+};
+
+window.deletePack = id => {
+  state.packs = state.packs.filter(p => p.id !== id);
+  save(); renderPacks();
+};
+
+byId('btnClearAll').onclick = () => {
+  if(confirm("مطمئنی؟ همه چی پاک می‌شه!")) {
+    state = {
+      settings: { totalLessons: 24, chapterMap: {} },
+      packs: [],
+      history: []
+    };
+    save();
+    populateLessonSelects();
+    renderChapterInputs(parseInt(byId('chapterCountInput').value || "8", 10));
+    renderPacks();
+    alert("کل دیتابیس پاک شد.");
+  }
+};
+
+/* ---------------- Export / Import ---------------- */
+byId('btnExport').onclick = () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "social8-db-v22.json";
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+byId('btnImport').onclick = async () => {
+  const inp = document.createElement("input");
+  inp.type = "file";
+  inp.accept = "application/json";
+  inp.onchange = async () => {
+    const f = inp.files?.[0];
+    if(!f) return;
+    const txt = await f.text();
+    try{
+      const obj = JSON.parse(txt);
+      if(!obj || !Array.isArray(obj.packs)) throw new Error("فرمت نامعتبر");
+      state = obj;
+      migrateState();
+      save();
+      populateLessonSelects();
+
+      const chapterCount = Math.max(
+        parseInt(byId('chapterCountInput').value || "8", 10),
+        Object.keys(state.settings.chapterMap || {}).length || 1
+      );
+      byId('chapterCountInput').value = chapterCount;
+      renderChapterInputs(chapterCount);
+      renderPacks();
+      alert("ورود موفق بود.");
+    }catch(e){
+      alert("خطا در ورود: " + e.message);
+    }
+  };
+  inp.click();
+};
+
+/* ---------------- QA SEARCH ---------------- */
+function getAllQuestions() {
+  let all = [];
+  state.packs.forEach(p => all = all.concat((p.items || []).map(it => ({
+    ...it,
+    lesson: it.lesson || p.lesson || null,
+    category: it.category || p.category || "short"
+  }))));
+  return all;
+}
+
+function commonKeywords(query, candidate, max=10){
+  const q = new Set(tokenizeFa(query));
+  const c = new Set(tokenizeFa(candidate));
+  return [...q].filter(x => c.has(x)).slice(0, max);
+}
+
+function runQASearch(query) {
+  const allQ = getAllQuestions();
+  const threshold = parseFloat(byId('qaThreshold').value);
+  const lessonFilter = byId('qaLessonFilter').value;
+  const categoryFilter = byId('qaCategoryFilter').value;
+
+  let filtered = allQ;
+
+  if(lessonFilter !== "all") {
+    filtered = filtered.filter(x => String(x.lesson) === String(lessonFilter));
+  }
+
+  if(categoryFilter !== "all") {
+    filtered = filtered.filter(x => x.category === categoryFilter);
+  }
+
+  if(filtered.length === 0) {
+    byId('qaResultsBox').innerHTML = `<div class="muted">در این فیلترها سوالی پیدا نشد.</div>`;
+    return;
+  }
+
+  if(!query || query.trim().length < 3){
+    byId('qaResultsBox').innerHTML = `<div class="muted">حداقل ۳ کاراکتر وارد کن.</div>`;
+    return;
+  }
+
+  const scored = filtered.map(item => {
+    const calc = combinedScore(query, item.question || "");
+    return { item, score: calc.score, parts: calc.parts };
+  })
+  .filter(x => x.score >= threshold)
+  .sort((a,b) => b.score - a.score)
+  .slice(0, 5);
+
+  if(scored.length === 0){
+    byId('qaResultsBox').innerHTML = `
+      <div class="card">
+        <b>چیزی پیدا نشد.</b>
+        <div class="muted small" style="margin-top:8px">
+          پیشنهاد: آستانه را پایین‌تر بگذار یا سؤال را با کلمات کلیدی‌تر بنویس.
+        </div>
+      </div>`;
+    return;
+  }
+
+  byId('qaResultsBox').innerHTML = scored.map(s => {
+    const common = commonKeywords(query, s.item.question);
+    const answers = (s.item.answers || []).filter(Boolean);
+    const exp = s.item.explanation || "";
+    return `
+      <div class="card" style="border-right: 4px solid var(--ok)">
+        <div class="row" style="justify-content:space-between">
+          <div class="qBadge">امتیاز: ${(s.score*100).toFixed(0)}%</div>
+          <div class="muted small">درس ${s.item.lesson || "-"} | ${escapeHtml(getCategoryLabel(s.item.category || "short"))}</div>
+        </div>
+
+        <p style="margin:10px 0 6px 0"><b>سوال مشابه:</b> ${escapeHtml(s.item.question)}</p>
+
+        ${common.length ? `<div class="kws">${common.map(w=>`<span class="kw">${escapeHtml(w)}</span>`).join('')}</div>` : `<div class="muted small">کلمه کلیدی مشترک قابل نمایش نیست.</div>`}
+
+        <div class="hr"></div>
+
+        <p style="margin:0 0 6px 0"><b>پاسخ کوتاه:</b> ${answers.length ? escapeHtml(answers.join(" / ")) : "<span class='muted'>پاسخ کوتاه ثبت نشده.</span>"}</p>
+
+        <div class="muted small" style="background: rgba(0,0,0,.25); padding:10px; border-radius:10px; border:1px solid var(--border)">
+          <b>توضیح تشریحی:</b><br>
+          ${exp ? escapeHtml(exp).replace(/\n/g,"<br>") : "توضیحی ثبت نشده."}
+        </div>
+
+        <div class="row" style="margin-top:10px">
+          <button class="btn ghost" onclick="useThisQuestion('${String(s.item.id)}')">افزودن به پک فوری</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+window.useThisQuestion = (idStr) => {
+  const id = parseFloat(idStr);
+  const all = getAllQuestions();
+  const q = all.find(x => x.id === id);
+  if(!q) return alert("پیدا نشد.");
+
+  state.packs.push({
+    id: Date.now(),
+    lesson: q.lesson || 0,
+    category: q.category || "short",
+    title: `پک فوری - درس ${q.lesson || "-"}`,
+    items: [q]
+  });
+  save();
+  renderPacks();
+  alert("به بانک اضافه شد.");
+};
+
+byId('btnQASearch').onclick = () => runQASearch(byId('qaSearchInput').value);
+byId('qaSearchInput').addEventListener('keydown', (e) => {
+  if(e.key === "Enter") runQASearch(byId('qaSearchInput').value);
+});
+byId('btnQAReset').onclick = () => {
+  byId('qaSearchInput').value = "";
+  byId('qaResultsBox').innerHTML = "";
+};
+
+/* ---------------- EXAM ENGINE ---------------- */
+let activeExam = { questions: [], startTime: 0, timer: null };
+
+byId('examMode').onchange = () => {
+  const mode = byId('examMode').value;
+  byId('rangeBox').style.display = mode === "range" ? "flex" : "none";
+  byId('chaptersBox').style.display = mode === "chapters" ? "flex" : "none";
+};
+
+byId('btnStartBuild').onclick = () => {
+  let pool = getAllQuestions();
+  if(pool.length === 0) return alert("بانک سوالات خالی است!");
+
+  const mode = byId('examMode').value;
+  const categoryFilter = byId('examCategoryFilter').value;
+
+  if(categoryFilter !== "all") {
+    pool = pool.filter(q => q.category === categoryFilter);
+  }
+
+  if(mode === "range") {
+    const start = parseInt(byId('rangeStart').value || "1", 10);
+    const end = parseInt(byId('rangeEnd').value || String(state.settings.totalLessons || 24), 10);
+    const min = Math.min(start, end);
+    const max = Math.max(start, end);
+    pool = pool.filter(q => q.lesson >= min && q.lesson <= max);
+  }
+
+  if(mode === "chapters") {
+    const selected = parseNumberList(byId('selectedChaptersInput').value);
+    if(selected.length === 0) return alert("شماره فصل‌ها را وارد کن. مثلاً: 1,3");
+    const lessonSet = new Set();
+    selected.forEach(ch => {
+      const lessons = state.settings.chapterMap[String(ch)] || state.settings.chapterMap[ch] || [];
+      lessons.forEach(l => lessonSet.add(l));
+    });
+    if(lessonSet.size === 0) {
+      return alert("برای فصل‌های انتخابی، در تنظیمات هنوز درسی ثبت نشده.");
+    }
+    pool = pool.filter(q => lessonSet.has(q.lesson));
+  }
+
+  if(pool.length === 0) return alert("با این فیلترها سوالی برای آزمون پیدا نشد.");
+
+  const count = Math.max(1, parseInt(byId('qCount').value || "10", 10));
+  activeExam.questions = shuffle(pool).slice(0, Math.min(count, pool.length));
+  activeExam.startTime = Date.now();
+
+  const modeTitle = ({
+    all: "آزمون از همه درس‌ها",
+    range: "آزمون از بازه درس‌ها",
+    chapters: "آزمون فصل‌های انتخابی"
+  })[mode] || "آزمون";
+
+  byId('examTitleHead').textContent = modeTitle;
+  showView('exam');
+  renderExam();
+  startTimer(Math.max(1, parseInt(byId('qTime').value || "15", 10)));
+};
+
+function renderExam() {
+  byId('examContainer').innerHTML = activeExam.questions.map((q, idx) => {
+    const isMCQ = (q.type === 'mcq' && Array.isArray(q.choices) && q.choices.length >= 4);
+    const choices = isMCQ ? q.choices.slice(0,4) : [];
+    return `
+      <div class="card q-block" data-id="${q.id}">
+        <div class="row" style="justify-content:space-between">
+          <b>${idx+1}. ${escapeHtml(q.question)}</b>
+          <span class="qBadge">درس ${q.lesson || "-"} | ${isMCQ ? "mcq" : "blank"}</span>
+        </div>
+        ${!isMCQ ?
+          `<input class="user-ans" placeholder="پاسخ را اینجا بنویسید..." style="margin-top:10px">` :
+          `<div class="col" style="margin-top:10px">
+            ${choices.map((opt, j) =>
+              `<label class="choice-item">
+                 <input type="radio" name="q-${idx}" value="${escapeHtml(opt)}">
+                 ${escapeHtml(opt)}
+               </label>`
+            ).join('')}
+          </div>`
+        }
+      </div>
+    `;
+  }).join('');
+}
+
+function startTimer(mins) {
+  let sec = mins * 60;
+  clearInterval(activeExam.timer);
+  const tick = () => {
+    const m = Math.floor(sec/60), s = sec%60;
+    byId('timer').textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    sec--;
+    if(sec < 0) submitExam();
+  };
+  tick();
+  activeExam.timer = setInterval(tick, 1000);
+}
+
+function submitExam() {
+  clearInterval(activeExam.timer);
+  const blocks = document.querySelectorAll('.q-block');
+  let correct = 0;
+  let detailsHtml = "";
+
+  activeExam.questions.forEach((q, idx) => {
+    const block = blocks[idx];
+    const isMCQ = (q.type === 'mcq' && Array.isArray(q.choices) && q.choices.length >= 4);
+    let userAns = "";
+
+    if(isMCQ) userAns = (block.querySelector('input:checked')?.value || "");
+    else userAns = (block.querySelector('.user-ans')?.value || "");
+
+    const answers = (q.answers || []).filter(Boolean);
+    let isCorrect = false;
+
+    if(answers.length){
+      const best = answers.map(a => combinedScore(userAns, a).score).sort((a,b)=>b-a)[0] || 0;
+      isCorrect = best >= 0.38;
+    }
+
+    if(isCorrect) correct++;
+
+    detailsHtml += `
+      <div class="card" style="border-right: 5px solid ${isCorrect ? 'var(--ok)' : 'var(--bad)'}">
+        <b>${idx+1}. ${escapeHtml(q.question)}</b><br>
+        <span class="muted small">درس ${q.lesson || "-"} | ${escapeHtml(getCategoryLabel(q.category || "short"))}</span><br>
+        <span class="small ${isCorrect ? '' : 'muted'}">پاسخ شما: ${escapeHtml(userAns || 'بدون پاسخ')}</span><br>
+        <span class="muted small">پاسخ صحیح: ${escapeHtml(answers.join(' / ')) || "—"}</span>
+        ${q.explanation ? `<div class="muted small" style="margin-top:6px">${escapeHtml(q.explanation).slice(0,220)}${q.explanation.length>220?"...":""}</div>` : ""}
+      </div>`;
+  });
+
+  const percent = activeExam.questions.length ? (correct / activeExam.questions.length) * 100 : 0;
+  byId('reportSummary').innerHTML = `
+    <div class="card" style="text-align:center; background: rgba(90,167,255,.20); border-color: rgba(90,167,255,.35)">
+      <h1 style="margin:0">${percent.toFixed(0)}%</h1>
+      <p style="margin:6px 0 0 0">تعداد پاسخ‌های صحیح: ${correct} از ${activeExam.questions.length}</p>
+    </div>`;
+  byId('reportDetails').innerHTML = detailsHtml;
+  showView('report');
+}
+byId('btnSubmitExam').onclick = submitExam;
+
+/* ---------------- UI NAVIGATION ---------------- */
+function showView(v) {
+  document.querySelectorAll('main section').forEach(s => s.style.display = 'none');
+  byId('view-' + v).style.display = 'block';
+  document.querySelectorAll('.nav button').forEach(b => b.classList.toggle('active', b.dataset.view === v));
+}
+byId('nav').onclick = e => { if(e.target?.dataset?.view) showView(e.target.dataset.view); };
+
+/* ---------------- INIT ---------------- */
+updateStats();
+populateLessonSelects();
+
+const initialChapterCount = Math.max(
+  parseInt(byId('chapterCountInput').value || "8", 10),
+  Object.keys(state.settings.chapterMap || {}).length || 1
+);
+byId('chapterCountInput').value = initialChapterCount;
+renderChapterInputs(initialChapterCount);
+
+renderPacks();
+</script>
+</body>
+</html>
